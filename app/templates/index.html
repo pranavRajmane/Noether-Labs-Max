@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Max | Noerther labs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, black, rgb(48, 53, 67));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            padding: 20px;
+            background: #10141d;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .typing-effect {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .typing-effect-small {
+            font-size: 1rem;
+            color: #c5c5c5;
+            margin-bottom: 20px;
+        }
+
+        .headings {
+            margin-bottom: 105px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            border: 1px solid #3c4049;
+            border-radius: 8px;
+            background: #1f2733;
+            color: #ffffff;
+            resize: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            color: #ffffff;
+        }
+
+        .parse-button {
+            background: linear-gradient(145deg, #3a6ea5, #2c4e73);
+            /* Cool blue */
+        }
+
+        .parse-button:hover {
+            background: linear-gradient(145deg, #4d88c3, #3a6ea5);
+            /* Slightly brighter blue */
+        }
+
+        .simulate-button {
+            background: linear-gradient(145deg, #438a7e, #2e6155);
+            /* Teal */
+        }
+
+        .simulate-button:hover {
+            background: linear-gradient(145deg, #58a391, #438a7e);
+            /* Slightly brighter teal */
+        }
+
+        .gif-button {
+            background: linear-gradient(145deg, #5e4c7c, #43365a);
+            /* Violet */
+        }
+
+        .gif-button:hover {
+            background: linear-gradient(145deg, #7c65a3, #5e4c7c);
+            /* Slightly brighter violet */
+        }
+
+        .output {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            background: #1f2733;
+            border-radius: 8px;
+            color: #a9b3c1;
+            font-size: 0.95rem;
+            border: 1px solid #3c4049;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="headings">
+            <div class="typing-effect" id="mainHeading"></div>
+            <div class="typing-effect-small" id="subHeading"></div>
+        </div>
+        <textarea id="command" placeholder=""></textarea>
+        <div class="button-group">
+            <button class="parse-button" onclick="parseCommand()">Parse</button>
+            <button class="simulate-button" onclick="runSimulation()">Run</button>
+            <button class="gif-button" onclick="openGif()">View GIF</button>
+        </div>
+        <div class="output" id="parsedOutput"></div>
+    </div>
+
+    <script>
+        // Function to simulate typing effect
+        function typeText(elementId, text, speed, callback) {
+            let i = 0;
+            const element = document.getElementById(elementId);
+            const interval = setInterval(() => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    if (callback) callback(); // Call the next typing function
+                }
+            }, speed);
+        }
+
+        // Start typing animation
+        document.addEventListener("DOMContentLoaded", () => {
+            typeText("mainHeading", "Greetings, I am Max", 100, () => {
+                typeText("subHeading", "Your advanced simulation assistant", 75);
+            });
+        });
+
+        async function parseCommand() {
+            const command = document.getElementById("command").value;
+            if (!command) {
+                alert("Please enter a command!");
+                return;
+            }
+            try {
+                const response = await fetch("/parse_command", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ command }),
+                });
+                const result = await response.json();
+                if (result.status === "success") {
+                    document.getElementById("parsedOutput").innerText = "Command parsed successfully!";
+                } else {
+                    document.getElementById("parsedOutput").innerText = `Error: ${result.message}`;
+                }
+            } catch (error) {
+                document.getElementById("parsedOutput").innerText = `Error: ${error.message}`;
+            }
+        }
+
+        async function runSimulation() {
+            const command = document.getElementById("command").value;
+            if (!command) {
+                alert("Please parse a command before running the simulation!");
+                return;
+            }
+            try {
+                const response = await fetch("/simulate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ command }),
+                });
+                const result = await response.json();
+                if (result.status === "success") {
+                    document.getElementById("parsedOutput").innerText = "Simulation complete! View the GIF.";
+                } else {
+                    document.getElementById("parsedOutput").innerText = `Error: ${result.message}`;
+                }
+            } catch (error) {
+                document.getElementById("parsedOutput").innerText = `Error: ${error.message}`;
+            }
+        }
+
+        function openGif() {
+            window.open("/view_gif", "_blank");
+        }
+    </script>
+</body>
+
+</html>
